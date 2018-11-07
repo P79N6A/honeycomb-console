@@ -91,6 +91,40 @@ exports.addWorker = function (ipAddress, clusterCode, callback) {
   );
 };
 
+const INSERT_SYSTEM_WORKER_TMP = `
+  INSERT INTO hc_console_system_worker_tmp
+    (ip, cluster_code, gmt_create)
+  VALUES
+    (?, ?, ?);`;
+const CHECK_SYSTEM_WORKER_TMP = `
+  select count(*) as cc from hc_console_system_worker_tmp where ip=? and cluster_code=?
+`
+
+exports.addTmpWorker = function (ipAddress, clusterCode, callback) {
+  let d = new Date();
+  db.query(CHECK_SYSTEM_WORKER_TMP, [ipAddress, clusterCode], (err, data) => {
+    if (err) {
+      return callback(err);
+    }
+    if (data && data[0].cc > 0) {
+      return callback(null);
+    }
+    db.query(
+      INSERT_SYSTEM_WORKER_TMP,
+      [ipAddress, clusterCode, d],
+      function (err) {
+        if (err) {
+          log.error('Insert new worker failed:', err);
+          return callback(err);
+        } else {
+          log.info('Add worker success');
+          callback(null);
+        }
+      }
+    );
+  });
+};
+
 const DELETE_SYSTEM_WORKER = `
   DELETE FROM
     hc_console_system_worker
@@ -102,6 +136,21 @@ exports.deleteWorker = function (ipAddress, clusterCode, callback) {
   db.query(
     DELETE_SYSTEM_WORKER,
     [ipAddress, clusterCode],
+    callback
+  );
+};
+
+const DELETE_SYSTEM_WORKER_TMP = `
+  DELETE FROM
+    hc_console_system_worker
+  WHERE
+    id = ?;
+`;
+
+exports.deleteTmpWorker = function (id, callback) {
+  db.query(
+    DELETE_SYSTEM_WORKER_TMP,
+    [id],
     callback
   );
 };

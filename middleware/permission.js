@@ -19,7 +19,9 @@ module.exports = function (req, res, next) {
     pathToRegex('/api/user').test(pathname) ||
     pathToRegex('/api/user/**/**').test(pathname) ||
     pathToRegex('/api/user/**').test(pathname) ||
-    pathToRegex('/api/status').test(pathname)) {
+    pathToRegex('/api/status').test(pathname) ||
+    pathToRegex('/api/worker/tmp/register').test(pathname)
+  ) {
     return next();
   }
 

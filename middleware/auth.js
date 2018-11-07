@@ -65,6 +65,9 @@ module.exports = function (req, res, next) {
         }
       });
       break;
+    case '/api/worker/tmp/register':
+      next();
+      break;
     default:
       User.countUser((err, count) => {
         let errmsg;
